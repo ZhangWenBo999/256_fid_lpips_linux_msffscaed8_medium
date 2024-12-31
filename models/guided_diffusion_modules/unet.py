@@ -13,7 +13,7 @@ from .nn import (
     gamma_embedding
 )
 
-from module_test.mlla_attnres_e2 import *
+from module_test.msff_scsa import *
 
 
 class SiLU(nn.Module):
@@ -415,13 +415,14 @@ class UNet(nn.Module):
                 ch = int(mult * inner_channel)
                 if ds in attn_res:
                     layers.append(
-                        AttentionBlock(
-                            ch,
-                            use_checkpoint=use_checkpoint,
-                            num_heads=num_heads,
-                            num_head_channels=num_head_channels,
-                            use_new_attention_order=use_new_attention_order,
-                        )
+                        # AttentionBlock(
+                        #     ch,
+                        #     use_checkpoint=use_checkpoint,
+                        #     num_heads=num_heads,
+                        #     num_head_channels=num_head_channels,
+                        #     use_new_attention_order=use_new_attention_order,
+                        # )
+                        MultiLevelSCSA(dim=ch, head_num=8)
                     )
                 self.input_blocks.append(EmbedSequential(*layers))
                 self._feature_size += ch
@@ -465,7 +466,8 @@ class UNet(nn.Module):
             #     num_head_channels=num_head_channels,
             #     use_new_attention_order=use_new_attention_order,
             # ),
-            MLLAttention(ch),
+            # MLLAttention(ch),
+            MultiLevelSCSA(dim=ch, head_num=8),
             ResBlock(
                 ch,
                 cond_embed_dim,
@@ -493,13 +495,14 @@ class UNet(nn.Module):
                 ch = int(inner_channel * mult)
                 if ds in attn_res:
                     layers.append(
-                        AttentionBlock(
-                            ch,
-                            use_checkpoint=use_checkpoint,
-                            num_heads=num_heads_upsample,
-                            num_head_channels=num_head_channels,
-                            use_new_attention_order=use_new_attention_order,
-                        )
+                        # AttentionBlock(
+                        #     ch,
+                        #     use_checkpoint=use_checkpoint,
+                        #     num_heads=num_heads_upsample,
+                        #     num_head_channels=num_head_channels,
+                        #     use_new_attention_order=use_new_attention_order,
+                        # )
+                        MultiLevelSCSA(dim=ch, head_num=8),
                     )
                 if level and i == res_blocks:
                     out_ch = ch
